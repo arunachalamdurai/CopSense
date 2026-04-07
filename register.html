@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Citizen Registration — CopSense | Bihar Police</title>
+  <meta name="description" content="Register as a citizen on CopSense Bihar Police portal to submit feedback and track your complaints." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/login.css" />
+  <style>
+    .register-steps {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .reg-step {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    .reg-step.active { background: var(--primary); }
+    .field-error { color: #C62828; font-size: 11px; margin-top: 3px; display: block; }
+    .form-control.is-invalid { border-color: #C62828 !important; }
+    .form-control.is-valid { border-color: #2E7D32 !important; }
+    .strength-bar { height: 4px; border-radius: 2px; margin-top: 4px; background: var(--border); overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0%; }
+    .citizen-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(46,92,138,0.1);
+      border: 1px solid rgba(46,92,138,0.2);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+    .citizen-badge svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; }
+    .success-screen { display: none; text-align: center; padding: 20px 0; }
+    .success-screen svg { width: 64px; height: 64px; stroke: #2E7D32; fill: none; stroke-width: 1.5; margin-bottom: 16px; }
+    .success-screen h2 { color: #2E7D32; margin-bottom: 8px; }
+    .success-screen p { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+  </style>
+</head>
+<body class="login-page">
+
+<div class="login-wrap">
+  <!-- Left Panel -->
+  <div class="login-panel-left">
+    <div class="login-logo">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 4L6 12v14c0 11 7.7 21.3 18 24 10.3-2.7 18-13 18-24V12L24 4z"/>
+        <polyline points="16 24 21 29 32 18"/>
+      </svg>
+    </div>
+    <div class="login-brand-name">CopSense</div>
+    <div class="login-brand-sub">Bihar Police · Citizen Portal</div>
+
+    <div class="login-features">
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Submit officer feedback anonymously
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Track your complaints in real time
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        AI classifies urgency automatically
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Feedback forwarded to senior officers
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Secure &amp; confidential platform
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="login-panel-right">
+    <div class="citizen-badge">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Citizen Registration
+    </div>
+
+    <h1 class="login-title" style="margin-top:0;">Create Your Account</h1>
+    <p class="login-subtitle">Register to submit feedback and track police responsiveness</p>
+
+    <div class="login-error" id="regError"></div>
+
+    <!-- Registration Form -->
+    <form class="login-form" id="regForm" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="regFullName">Full Name <span class="required">*</span></label>
+          <div class="login-input-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <input type="text" id="regFullName" class="form-control" placeholder="Your full name" autocomplete="name" />
+          </div>
+          <span class="field-error" id="err-fullName"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regPhone">Mobile Number <span class="required">*</span></label>
+          <div class="login-input-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <input type="tel" id="regPhone" class="form-control" placeholder="10-digit mobile number" autocomplete="tel" maxlength="10" />
+          </div>
+          <span class="field-error" id="err-phone"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regUsername">Username <span class="required">*</span></label>
+        <div class="login-input-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="regUsername" class="form-control" placeholder="Choose a username (min 3 chars)" autocomplete="username" />
+        </div>
+        <span class="field-error" id="err-username"></span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="regPassword">Password <span class="required">*</span></label>
+          <div class="login-input-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="regPassword" class="form-control" placeholder="Min 6 characters" autocomplete="new-password" />
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <span class="field-error" id="err-password"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regConfirm">Confirm Password <span class="required">*</span></label>
+          <div class="login-input-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="regConfirm" class="form-control" placeholder="Repeat password" autocomplete="new-password" />
+          </div>
+          <span class="field-error" id="err-confirm"></span>
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn" id="regSubmitBtn">Create Citizen Account</button>
+    </form>
+
+    <!-- Success screen -->
+    <div class="success-screen" id="successScreen">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+      <h2>Account Created!</h2>
+      <p>Your citizen account has been created successfully. You can now log in and submit feedback to improve police services in your area.</p>
+      <a href="index.html" class="login-btn" style="display:inline-block;text-align:center;text-decoration:none;">Go to Login</a>
+    </div>
+
+    <div class="login-divider">Already have an account?</div>
+    <a href="index.html" style="display:block;text-align:center;font-size:13px;color:var(--primary);font-weight:500;text-decoration:none;">← Back to Login</a>
+
+    <div class="login-footer">
+      CopSense v2.0 &nbsp;·&nbsp; Bihar Police Department &nbsp;·&nbsp; Citizen Portal
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  // Redirect if already logged in
+  if (Auth.isLoggedIn()) {
+    const user = Auth.getUser();
+    window.location.href = user.role === 'citizen' ? 'feedback.html' : 'dashboard.html';
+  }
+
+  const form   = document.getElementById('regForm');
+  const errBox = document.getElementById('regError');
+  const btn    = document.getElementById('regSubmitBtn');
+
+  // Password strength indicator
+  document.getElementById('regPassword').addEventListener('input', function() {
+    const v = this.value;
+    const fill = document.getElementById('strengthFill');
+    let strength = 0;
+    if (v.length >= 6) strength++;
+    if (v.length >= 10) strength++;
+    if (/[A-Z]/.test(v)) strength++;
+    if (/[0-9]/.test(v)) strength++;
+    if (/[^A-Za-z0-9]/.test(v)) strength++;
+    const pct = (strength / 5) * 100;
+    const colors = ['#C62828','#F9A825','#F9A825','#2E7D32','#2E7D32'];
+    fill.style.width = pct + '%';
+    fill.style.background = colors[Math.min(strength - 1, colors.length - 1)] || '#C62828';
+  });
+
+  function clearErr(id) {
+    const el = document.getElementById('err-' + id);
+    if (el) el.textContent = '';
+    const field = document.getElementById('reg' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (field) field.classList.remove('is-invalid');
+  }
+  function setErr(id, msg) {
+    const el = document.getElementById('err-' + id);
+    if (el) el.textContent = msg;
+    const field = document.getElementById('reg' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (field) field.classList.add('is-invalid');
+  }
+
+  function validate() {
+    let ok = true;
+    const fullName = document.getElementById('regFullName').value.trim();
+    const phone    = document.getElementById('regPhone').value.trim();
+    const username = document.getElementById('regUsername').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirm  = document.getElementById('regConfirm').value;
+
+    clearErr('fullName'); clearErr('phone'); clearErr('username'); clearErr('password'); clearErr('confirm');
+
+    if (!fullName || fullName.length < 2) { setErr('fullName', 'Full name must be at least 2 characters.'); ok = false; }
+    if (!phone || !/^[6-9]\d{9}$/.test(phone)) { setErr('phone', 'Enter a valid 10-digit Indian mobile number starting with 6-9.'); ok = false; }
+    if (!username || username.length < 3) { setErr('username', 'Username must be at least 3 characters.'); ok = false; }
+    if (/\s/.test(username)) { setErr('username', 'Username cannot contain spaces.'); ok = false; }
+    if (!password || password.length < 6) { setErr('password', 'Password must be at least 6 characters.'); ok = false; }
+    if (password !== confirm) { setErr('confirm', 'Passwords do not match.'); ok = false; }
+    return ok;
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (!validate()) return;
+
+    errBox.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Creating account…';
+
+    const payload = {
+      username:   document.getElementById('regUsername').value.trim().toLowerCase(),
+      full_name:  document.getElementById('regFullName').value.trim(),
+      password:   document.getElementById('regPassword').value,
+      phone:      document.getElementById('regPhone').value.trim(),
+      role:       'citizen', // Citizens only can self-register
+    };
+
+    try {
+      await AuthAPI.register(payload);
+      form.style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+    } catch(err) {
+      errBox.textContent = err.message || 'Registration failed. Please try again.';
+      errBox.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Create Citizen Account';
+    }
+  });
+</script>
+</body>
+</html>

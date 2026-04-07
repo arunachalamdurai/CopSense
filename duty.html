@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Officer Duty — CopSense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <style>
+    .duty-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden; }
+    .duty-card-header { background:var(--primary);padding:var(--space-5) var(--space-6);color:#fff; }
+    .duty-card-body { padding:var(--space-5) var(--space-6); }
+    .duty-info-row { display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--border-light); }
+    .duty-info-row:last-child { border-bottom:none; }
+    .duty-info-icon { width:34px;height:34px;background:var(--bg-page);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .duty-info-icon svg { width:16px;height:16px;stroke:var(--secondary);fill:none;stroke-width:2;stroke-linecap:round; }
+    .duty-info-label { font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px; }
+    .duty-info-val { font-size:14px;font-weight:600; }
+    .gps-status { display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-4); }
+    .gps-pulse { width:12px;height:12px;border-radius:50%;background:var(--success);position:relative;animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(46,125,50,.4);} 50%{box-shadow:0 0 0 8px rgba(46,125,50,0);} }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div><div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div></div>
+    <div class="sidebar-user"><div class="sidebar-user-avatar" id="sbUserAvatar">--</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div><a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></span><span class="nav-label">FIR Management</span></a>
+      <a class="nav-item" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span></a>
+      <a class="nav-item" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item active" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left"><button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">Officer Duty</span></div><span class="district-badge">Patna District</span></div>
+      <div class="navbar-right"><div class="navbar-datetime" id="navDatetime">--</div><div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div></div>
+    </nav>
+
+    <main class="page-body">
+      <div class="page-header-row">
+        <div><h1>Officer Duty Board</h1><p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">View your assigned duty, location and update your field status</p></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5);margin-bottom:var(--space-5);">
+        <!-- Duty Card -->
+        <div class="duty-card">
+          <div class="duty-card-header">
+            <div style="font-size:12px;opacity:.7;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Current Assignment</div>
+            <div style="font-size:20px;font-weight:700;margin-bottom:2px;" id="dutyTitle">Loading...</div>
+            <div style="font-size:12px;opacity:.7;" id="dutyShift">—</div>
+          </div>
+          <div class="duty-card-body">
+            <div class="duty-info-row">
+              <div class="duty-info-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <div><div class="duty-info-label">Assigned Location</div><div class="duty-info-val" id="dutyLocation">—</div></div>
+            </div>
+            <div class="duty-info-row">
+              <div class="duty-info-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+              <div><div class="duty-info-label">Reporting Officer</div><div class="duty-info-val" id="dutyReporting">—</div></div>
+            </div>
+            <div class="duty-info-row">
+              <div class="duty-info-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+              <div><div class="duty-info-label">Duty Timing</div><div class="duty-info-val" id="dutyTime">—</div></div>
+            </div>
+            <div class="duty-info-row">
+              <div class="duty-info-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+              <div><div class="duty-info-label">Zone</div><div class="duty-info-val" id="dutyZone">—</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GPS & Status Update -->
+        <div>
+          <div class="card" style="margin-bottom:var(--space-4);">
+            <div class="card-header"><div class="card-title">GPS Status</div></div>
+            <div class="card-body">
+              <div class="gps-status">
+                <div class="gps-pulse" id="gpsDot"></div>
+                <span style="font-size:13px;font-weight:600;" id="gpsStatus">Acquiring location...</span>
+              </div>
+              <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-4);" id="gpsCoords">Lat: —, Lng: —</div>
+              <button class="btn btn-primary" id="shareGPSBtn" style="width:100%;">
+                <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Share My GPS Location
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Update Duty Status</div></div>
+            <div class="card-body">
+              <div class="form-group"><label class="form-label">Current Status</label>
+                <select class="form-control form-select" id="dutyStatus">
+                  <option value="on-post">On Post</option>
+                  <option value="patrolling">Patrolling</option>
+                  <option value="emergency">Emergency Response</option>
+                  <option value="break">Short Break</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Field Report / Notes</label>
+                <textarea class="form-control" id="dutyNotes" rows="3" placeholder="Report any observations, incidents, or unusual activity..."></textarea>
+              </div>
+              <button class="btn btn-success" id="updateDutyBtn" style="width:100%;">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Submit Status Update
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GPS Violation Alert Banner -->
+      <div id="violationBanner" style="display:none;background:#FFEBEE;border:1px solid rgba(198,40,40,0.3);border-radius:var(--radius);padding:16px 20px;margin-bottom:var(--space-5);">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#C62828;fill:none;stroke-width:2;flex-shrink:0;margin-top:1px;"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div style="flex:1;">
+            <div style="font-weight:700;color:#C62828;margin-bottom:6px;">⚠ GEOFENCE VIOLATION — You are outside your assigned patrol zone</div>
+            <p style="font-size:13px;color:#B71C1C;margin-bottom:12px;">Your current GPS location does not match your assigned area. Please provide a reason for being out of zone. This report will be sent to your Station Officer.</p>
+            <div class="form-group" style="margin-bottom:8px;">
+              <label class="form-label" style="color:#C62828;">Reason for being out of zone <span class="required">*</span></label>
+              <textarea class="form-control" id="violationReason" rows="3" placeholder="Explain why you are outside the assigned zone (emergency response, transit, etc.)"></textarea>
+              <span style="color:#C62828;font-size:11px;" id="err-violationReason"></span>
+            </div>
+            <button class="btn btn-danger" id="submitViolationBtn" onclick="submitViolationReport()">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12"/></svg>
+              Submit Violation Report
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Duty Log -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Today's Activity Log</div></div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table" id="dutyLogTable">
+            <thead><tr><th>Time</th><th>Status</th><th>Location</th><th>Notes</th></tr></thead>
+            <tbody id="dutyLogBody">
+              <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No duty log entries yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script>
+'use strict';
+// Auth and RBAC enforced by common.js
+
+let currentDuty = null;
+
+async function loadDuty() {
+  try {
+      const res = await DutyAPI.list();
+      const me = Auth.getUser();
+      // Find my latest active duty
+      const myDuties = res.data.filter(d => d.officer_id === me.id).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      if (myDuties.length > 0) {
+          currentDuty = myDuties[0];
+          document.getElementById('dutyTitle').textContent    = 'Zone: ' + currentDuty.zone;
+          document.getElementById('dutyShift').textContent    = 'Start: ' + currentDuty.start_time.split('T')[0];
+          document.getElementById('dutyLocation').textContent = 'Lat ' + currentDuty.lat_assigned + ', Lng ' + currentDuty.lng_assigned;
+          document.getElementById('dutyReporting').textContent= 'Station ID: ' + currentDuty.station_id;
+          document.getElementById('dutyTime').textContent     = currentDuty.start_time.split('T')[1].substring(0,5) + ' to ' + currentDuty.end_time.split('T')[1].substring(0,5);
+          document.getElementById('dutyZone').textContent     = currentDuty.zone;
+          
+          if (currentDuty.gps_status === 'active') {
+              document.getElementById('gpsStatus').textContent = 'GPS Active — Location Shared';
+              document.getElementById('gpsCoords').textContent = 'Lat: ' + currentDuty.lat_assigned + ', Lng: ' + currentDuty.lng_assigned;
+          }
+      } else {
+          document.getElementById('dutyTitle').textContent = 'No Active Duty Assignment';
+          document.getElementById('dutyShift').textContent = '—';
+          document.getElementById('dutyLocation').textContent = '—';
+          document.getElementById('dutyReporting').textContent= '—';
+          document.getElementById('dutyTime').textContent     = '—';
+          document.getElementById('dutyZone').textContent     = '—';
+      }
+  } catch(err) {
+      showToast('Error loading duty: ' + err.message, 'danger');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  if (Auth.isLoggedIn()) {
+      await loadDuty();
+  }
+
+  document.getElementById('shareGPSBtn').addEventListener('click', async function() {
+    if (!currentDuty) { showToast('No active duty to share GPS for.', 'danger'); return; }
+    const btn = this;
+    btn.textContent = 'Getting location…'; btn.disabled = true;
+
+    function sendGPS(lat, lng) {
+      const payload = { lat, lng, violation_reason: '' };
+      document.getElementById('gpsCoords').textContent = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+      return DutyAPI.submitGPS(currentDuty.id, payload);
+    }
+
+    try {
+      let lat, lng;
+      if (navigator.geolocation) {
+        const pos = await new Promise((ok, err) => navigator.geolocation.getCurrentPosition(ok, err, { timeout: 5000 }));
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+      } else {
+        // Simulate near assigned location
+        lat = currentDuty.lat_assigned + (Math.random() * 0.004 - 0.002);
+        lng = currentDuty.lng_assigned + (Math.random() * 0.004 - 0.002);
+      }
+
+      const res = await sendGPS(lat, lng);
+      const isViolation = res.geofence_violation;
+      document.getElementById('gpsStatus').textContent = isViolation ? '⚠ GPS — Geofence Violation!' : '✓ GPS Active — Inside Zone';
+      document.getElementById('gpsDot').style.background = isViolation ? '#C62828' : 'var(--success)';
+
+      // Show violation banner if applicable
+      const banner = document.getElementById('violationBanner');
+      if (banner) banner.style.display = isViolation ? 'block' : 'none';
+
+      const now = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:false });
+      const tbody = document.getElementById('dutyLogBody');
+      const firstRow = tbody.querySelector('tr[data-empty]');
+      if (firstRow) firstRow.remove();
+      const row = document.createElement('tr');
+      row.innerHTML = `<td style="font-family:monospace;">${now}</td><td><span class="badge ${isViolation?'badge-danger':'badge-success'}">GPS ${isViolation?'VIOLATION':'OK'}</span></td><td>${lat.toFixed(5)}, ${lng.toFixed(5)}</td><td>${isViolation ? '⚠ Outside patrol zone' : 'Inside patrol zone'}</td>`;
+      tbody.insertBefore(row, tbody.firstChild);
+
+      showToast(isViolation ? '⚠ Geofence violation detected! Please submit reason.' : 'GPS location shared. Inside zone.', isViolation ? 'danger' : 'success');
+    } catch(err) {
+      showToast('GPS failed: ' + err.message, 'danger');
+    } finally {
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg> Share My GPS Location';
+      }, 3000);
+    }
+  });
+
+  function submitViolationReport() {
+    const reason = (document.getElementById('violationReason')?.value || '').trim();
+    const errEl  = document.getElementById('err-violationReason');
+    if (!reason || reason.length < 10) {
+      if (errEl) errEl.textContent = 'Please provide a reason of at least 10 characters.';
+      return;
+    }
+    if (errEl) errEl.textContent = '';
+    if (!currentDuty) { showToast('No active duty found.', 'danger'); return; }
+    const payload = {
+      lat: currentDuty.lat_assigned + 0.005,
+      lng: currentDuty.lng_assigned + 0.005,
+      violation_reason: reason,
+    };
+    DutyAPI.submitGPS(currentDuty.id, payload).then(() => {
+      showToast('Violation report submitted to Station Officer.', 'success');
+      document.getElementById('violationBanner').style.display = 'none';
+      document.getElementById('violationReason').value = '';
+    }).catch(err => showToast('Error: ' + err.message, 'danger'));
+  }
+  window.submitViolationReport = submitViolationReport;
+
+  document.getElementById('updateDutyBtn').addEventListener('click', function() {
+    const status = document.getElementById('dutyStatus').value;
+    const notes  = document.getElementById('dutyNotes').value.trim() || 'Status update submitted.';
+    const now    = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});
+    const statusLabels = { 'on-post':'On Post','patrolling':'Patrolling','emergency':'Emergency','break':'Short Break' };
+    const badgeClass = { 'on-post':'badge-success','patrolling':'badge-warning','emergency':'badge-danger','break':'badge-neutral' };
+    const tbody = document.getElementById('dutyLogBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `<td style="font-family:monospace;">${now}</td><td><span class="badge ${badgeClass[status]}">${statusLabels[status]}</span></td><td>Current Sector</td><td>${notes}</td>`;
+    tbody.insertBefore(row, tbody.firstChild);
+    document.getElementById('dutyNotes').value = '';
+    showToast('Duty status updated: ' + statusLabels[status], 'success');
+  });
+});
+</script>
+</body>
+</html>

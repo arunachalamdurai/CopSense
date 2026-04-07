@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Custody Safety — CopSense</title>
+  <meta name="description" content="Monitor safety and health of persons in police custody. AI-powered alerts for custodial risk." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <style>
+    .custody-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: box-shadow var(--transition);
+    }
+    .custody-card:hover { box-shadow: var(--shadow); }
+    .custody-card-header {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .custody-card-body { padding: var(--space-4); }
+    .person-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .custody-meta { font-size: 12px; color: var(--text-secondary); }
+    .custody-meta span { font-weight: 600; color: var(--text-primary); }
+    .health-bar { display:flex; gap:6px; margin-top:var(--space-3); flex-wrap:wrap; }
+    .health-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .health-pill svg { width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round; }
+    .pill-ok     { background:var(--success-bg);color:var(--success);border-color:rgba(46,125,50,.25); }
+    .pill-warn   { background:var(--warning-bg);color:#7B5800;border-color:rgba(249,168,37,.3); }
+    .pill-danger { background:var(--danger-bg);color:var(--danger);border-color:rgba(198,40,40,.25); }
+    .time-since  { font-size:11px;color:var(--text-muted);margin-top:6px; }
+    .alert-banner {
+      display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);
+      background:var(--danger-bg);border:1px solid rgba(198,40,40,.3);border-radius:var(--radius-sm);
+      margin-bottom:var(--space-4);
+    }
+    .alert-banner svg { width:20px;height:20px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0; }
+    .alert-banner-text { font-size:13px;color:var(--danger);font-weight:500; }
+    .custody-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-bottom:var(--space-6); }
+    @media(max-width:900px){.custody-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:580px){.custody-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div><div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div></div>
+    <div class="sidebar-user"><div class="sidebar-user-avatar" id="sbUserAvatar">--</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div><a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span><span class="nav-label">FIR Management</span><span class="nav-badge">7</span></a>
+      <a class="nav-item" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span><span class="nav-badge">12</span></a>
+      <a class="nav-item active" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span><span class="nav-badge" style="background:#F9A825;">2</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left"><button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">Custody Safety</span></div><span class="district-badge">Patna District</span></div>
+      <div class="navbar-right"><div class="navbar-datetime" id="navDatetime">--</div><div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div></div>
+    </nav>
+
+    <main class="page-body">
+      <div class="page-header-row">
+        <div>
+          <h1>Custody Safety Monitoring</h1>
+          <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Real-time health and safety tracking for all persons in custody</p>
+        </div>
+        <div class="flex flex-gap-2">
+          <button class="btn btn-primary btn-sm" data-modal-open="addCustodyModal"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Arrest Entry</button>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr);margin-bottom:var(--space-5);">
+        <div class="stat-card card-info"><div class="stat-icon stat-icon-blue"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/></svg></div><div class="stat-body"><div class="stat-label">Total in Custody</div><div class="stat-value" id="c-total">18</div></div></div>
+        <div class="stat-card card-danger"><div class="stat-icon stat-icon-red"><svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div class="stat-body"><div class="stat-label">Alerts (No Update)</div><div class="stat-value" id="c-alerts">2</div></div></div>
+        <div class="stat-card card-warning"><div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="stat-body"><div class="stat-label">Medical Attention</div><div class="stat-value" id="c-medical">3</div></div></div>
+        <div class="stat-card card-success"><div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Health OK</div><div class="stat-value" id="c-ok">13</div></div></div>
+      </div>
+
+      <!-- Alert Banners -->
+      <div id="custodyAlerts"></div>
+
+      <!-- Custody Cards Grid -->
+      <div class="section-title" style="margin-bottom:var(--space-3);">Current Custody — Live Monitor</div>
+      <div class="custody-grid" id="custodyGrid"></div>
+
+      <!-- Custody Log Table -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Custody Activity Log</div><span style="font-size:12px;color:var(--text-muted);">All health check-ins and updates</span></div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table" id="custodyLogTable">
+            <thead><tr><th>Arrest ID</th><th>Person</th><th>Update Time</th><th>Officer</th><th>Meal</th><th>Injury</th><th>Medical</th><th>Notes</th></tr></thead>
+            <tbody id="custodyLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Arrest Modal -->
+<div class="modal-overlay" id="addCustodyModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">New Arrest Entry</div><button class="modal-close" data-modal-close="addCustodyModal"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Person's Full Name <span class="required">*</span></label><input type="text" class="form-control" id="cPersonName" placeholder="Name"/></div>
+        <div class="form-group"><label class="form-label">Age</label><input type="number" class="form-control" id="cPersonAge" placeholder="Age" min="1" max="100"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Arrest Location <span class="required">*</span></label><input type="text" class="form-control" id="cArrLoc" placeholder="Location"/></div>
+        <div class="form-group"><label class="form-label">Arresting Officer <span class="required">*</span></label><input type="text" class="form-control" id="cArrOfficer" placeholder="Officer name / badge"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Arrest Reason / Section <span class="required">*</span></label><input type="text" class="form-control" id="cArrReason" placeholder="e.g. IPC 302, Theft under Sec 379..."/></div>
+      <hr class="form-divider"/>
+      <div class="section-title" style="font-size:14px;margin-bottom:var(--space-3);">Initial Health Assessment</div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Injury Status</label><select class="form-control form-select" id="cInjury"><option value="None">None</option><option value="Minor">Minor</option><option value="Serious">Serious</option></select></div>
+        <div class="form-group"><label class="form-label">Medical Condition</label><select class="form-control form-select" id="cMedical"><option value="Normal">Normal</option><option value="Attention Needed">Needs Attention</option><option value="Critical">Critical</option></select></div>
+        <div class="form-group"><label class="form-label">Meal Provided</label><select class="form-control form-select" id="cMeal"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Health Notes</label><textarea class="form-control" id="cNotes" rows="2" placeholder="Any additional health observations..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-modal-close="addCustodyModal">Cancel</button><button class="btn btn-primary" id="saveCustodyBtn">Register Arrest</button></div>
+  </div>
+</div>
+
+<!-- Health Update Modal -->
+<div class="modal-overlay" id="updateHealthModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Update Health Status</div><button class="modal-close" data-modal-close="updateHealthModal"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="hUpdateId"/>
+      <div class="form-group"><label class="form-label">Person</label><input type="text" class="form-control" id="hUpdateName" disabled/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Injury</label><select class="form-control form-select" id="hInjury"><option>None</option><option>Minor</option><option>Serious</option></select></div>
+        <div class="form-group"><label class="form-label">Medical</label><select class="form-control form-select" id="hMedical"><option>Normal</option><option>Attention Needed</option><option>Critical</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Meal</label><select class="form-control form-select" id="hMeal"><option>Yes</option><option>No</option></select></div>
+        <div class="form-group"><label class="form-label">Updating Officer</label><input type="text" class="form-control" id="hOfficer" placeholder="Your name"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="hNotes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-modal-close="updateHealthModal">Cancel</button><button class="btn btn-success" id="saveHealthBtn">Save Update</button></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/custody.js"></script>
+
+<!-- Hidden file input for video upload -->
+<input type="file" id="videoUploadInput" accept="video/mp4,video/x-m4v,video/*" style="display:none;" />
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CopSense — Login | Intelligent Police Monitoring System</title>
+  <meta name="description" content="CopSense login portal for Bihar Police MIS — District Monitoring & Decision Support System." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/login.css" />
+</head>
+<body class="login-page">
+
+<div class="login-wrap">
+  <!-- Left Panel -->
+  <div class="login-panel-left">
+    <div class="login-logo">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 4L6 12v14c0 11 7.7 21.3 18 24 10.3-2.7 18-13 18-24V12L24 4z"/>
+        <polyline points="16 24 21 29 32 18"/>
+      </svg>
+    </div>
+    <div class="login-brand-name">CopSense</div>
+    <div class="login-brand-sub">Bihar Police · MIS Platform</div>
+
+    <div class="login-features">
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Real-time District Dashboard
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        FIR &amp; Complaint Management
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Custody Safety Monitoring
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        AI Crowd &amp; Event Planning
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Officer Deployment Tracking
+      </div>
+      <div class="login-feature-item">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Citizen Feedback &amp; Analytics
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="login-panel-right">
+    <h1 class="login-title">Sign In</h1>
+    <p class="login-subtitle">Access your CopSense portal with your credentials</p>
+
+    <div class="login-error" id="loginError">
+      Invalid username or password. Please try again.
+    </div>
+
+    <form class="login-form" id="loginForm" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="username">Username / Badge ID</label>
+        <div class="login-input-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <input type="text" id="username" class="form-control" placeholder="e.g. ssp.patna" autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="login-input-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="password" class="form-control" placeholder="Enter password" autocomplete="current-password" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="roleSelect">Role</label>
+        <select id="roleSelect" class="form-control form-select">
+          <option value="">-- Select Your Role --</option>
+          <option value="District Head (SSP)">District Head (SSP)</option>
+          <option value="Station Officer">Station Officer (Inspector)</option>
+          <option value="Field Officer">Field Police Officer</option>
+          <option value="Citizen">Citizen</option>
+        </select>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginSubmitBtn">Sign In to CopSense</button>
+    </form>
+
+    <div class="login-divider">Quick Demo Access</div>
+
+    <div class="demo-roles">
+      <button class="demo-role-btn" onclick="demoLogin('ssp.patna','Admin@123')">
+        District Head (SSP)
+      </button>
+      <button class="demo-role-btn" onclick="demoLogin('so.patna','Officer@123')">
+        Station Officer
+      </button>
+      <button class="demo-role-btn" onclick="demoLogin('fo.deepak','Field@123')">
+        Field Officer
+      </button>
+      <button class="demo-role-btn" onclick="demoLogin('citizen.ravi','Citizen@123')">
+        Citizen
+      </button>
+    </div>
+
+    <div class="login-footer">
+      CopSense v2.0 &nbsp;·&nbsp; Bihar Police Department &nbsp;·&nbsp; Confidential System
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <span style="font-size:12px;color:var(--text-muted);">New citizen? </span>
+      <a href="register.html" style="font-size:12px;color:var(--primary);font-weight:500;text-decoration:none;">Register here →</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  // Redirect if already logged in
+  if (Auth.isLoggedIn()) {
+    const user = Auth.getUser();
+    if (user && user.role) {
+      window.location.href = user.role === 'citizen' ? 'feedback.html' : 'dashboard.html';
+    } else {
+      Auth.clear();
+    }
+  } else if (Auth.getToken() || localStorage.getItem('copsense_user')) {
+    Auth.clear();
+  }
+
+  const btn     = document.getElementById('loginSubmitBtn');
+  const errorEl = document.getElementById('loginError');
+
+  async function performLogin(username, password) {
+    btn.disabled    = true;
+    btn.textContent = 'Signing in\u2026';
+    errorEl.classList.remove('show');
+    try {
+      const user = await AuthAPI.login(username, password);
+      // Also keep sessionStorage for legacy common.js compatibility
+      sessionStorage.setItem('copsense_user', JSON.stringify({
+        name: user.full_name, role: roleLabel(user.role), district: 'Patna',
+        id: user.id, username: user.username, badge_id: user.badge_id,
+        station_id: user.station_id, station_name: user.station_name,
+      }));
+      window.location.href = user.role === 'citizen' ? 'feedback.html' : 'dashboard.html';
+    } catch(err) {
+      errorEl.textContent = err.message || 'Login failed. Check credentials or ensure backend is running on port 8000.';
+      errorEl.classList.add('show');
+      btn.disabled    = false;
+      btn.textContent = 'Sign In to CopSense';
+    }
+  }
+
+  function roleLabel(role) {
+    const map = { district_head:'District Head (SSP)', station_officer:'Station Officer', field_officer:'Field Officer', citizen:'Citizen' };
+    return map[role] || role;
+  }
+
+  function demoLogin(username, password) {
+    document.getElementById('username').value = username;
+    document.getElementById('password').value = password;
+    performLogin(username, password);
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (username && password) {
+      performLogin(username, password);
+    } else {
+      errorEl.textContent = 'Please enter both username and password.';
+      errorEl.classList.add('show');
+    }
+  });
+</script>
+</body>
+</html>

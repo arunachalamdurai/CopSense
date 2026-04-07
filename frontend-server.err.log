@@ -1,0 +1,24 @@
+127.0.0.1 - - [06/Apr/2026 22:27:45] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:27:45] code 404, message File not found
+127.0.0.1 - - [06/Apr/2026 22:27:45] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [06/Apr/2026 22:27:48] "GET /backend-server.log HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:28] "GET /feedback.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:28] "GET /css/sidebar.css HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:28] "GET /js/feedback.js HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:28] "GET /js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:28] "GET /css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:29] "GET /css/components.css HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:59] "GET /fir.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:59] "GET /js/fir.js HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:59] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:59] "GET /js/api.js HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:30:59] "GET /css/login.css HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:56:47] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:57:32] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:58:47] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:58:47] "GET /css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:58:47] "GET /css/login.css HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:58:47] "GET /js/api.js HTTP/1.1" 200 -
+127.0.0.1 - - [06/Apr/2026 22:58:48] code 404, message File not found
+127.0.0.1 - - [06/Apr/2026 22:58:48] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [06/Apr/2026 22:59:13] "GET /index.html HTTP/1.1" 304 -

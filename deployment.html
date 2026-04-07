@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Deployment Map — CopSense</title>
+  <meta name="description" content="Live officer deployment map and zone management for district police operations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    .map-tab-bar { display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:var(--space-4); }
+    .map-tab { padding:9px var(--space-5);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s; }
+    .map-tab.active { color:var(--secondary);border-bottom-color:var(--secondary); }
+    .map-panel { display:none; }
+    .map-panel.active { display:block; }
+    #heatmapCanvas { height:500px;width:100%;border-radius:var(--radius);z-index:1;border:1px solid var(--border); }
+    .heat-legend { display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);flex-wrap:wrap; }
+    .heat-grad { width:160px;height:10px;border-radius:5px;background:linear-gradient(to right,#2E7D32,#F9A825,#C62828);flex-shrink:0; }
+    .time-filter-btns { display:flex;gap:var(--space-2); }
+    .time-btn { padding:5px var(--space-3);border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;background:var(--bg-card);color:var(--text-secondary);transition:all .2s; }
+    .time-btn.active { background:var(--primary);color:#fff;border-color:var(--primary); }
+    .zone-crime-table .data-table tbody tr td:first-child { font-weight:700; }
+  </style>
+  <style>
+    #deploymentMap { height:500px;width:100%;border-radius:var(--radius);z-index:1;border:1px solid var(--border); }
+    .officer-list-panel { max-height:560px; overflow-y:auto; }
+    .officer-list-item { display:flex;align-items:center;gap:var(--space-3);padding:10px var(--space-4);border-bottom:1px solid var(--border-light);cursor:pointer;transition:background var(--transition); }
+    .officer-list-item:hover { background:var(--bg-page); }
+    .officer-list-item:last-child { border-bottom:none; }
+    .officer-list-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+    .officer-list-info { flex:1;min-width:0; }
+    .officer-list-name { font-size:13px;font-weight:600; }
+    .officer-list-station { font-size:11px;color:var(--text-secondary); }
+    .map-legend { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-3) var(--space-4);display:flex;gap:var(--space-4);flex-wrap:wrap; }
+    .legend-item { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary); }
+    .legend-dot { width:12px;height:12px;border-radius:50;border-radius:50%; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div><div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div></div>
+    <div class="sidebar-user"><div class="sidebar-user-avatar" id="sbUserAvatar">--</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div><a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></span><span class="nav-label">FIR Management</span><span class="nav-badge">7</span></a>
+      <a class="nav-item" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span><span class="nav-badge">12</span></a>
+      <a class="nav-item" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span><span class="nav-badge" style="background:#F9A825;">2</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item active" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left"><button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">Deployment Map</span></div><span class="district-badge">Patna District</span></div>
+      <div class="navbar-right"><div class="navbar-datetime" id="navDatetime">--</div><div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div></div>
+    </nav>
+
+    <main class="page-body">
+      <div class="page-header-row">
+        <div><h1>Deployment &amp; Heatmap</h1><p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Visual intelligence instead of raw numbers — Live officer positions &amp; crime density map</p></div>
+        <div class="flex flex-gap-2">
+          <span class="badge badge-success" style="padding:6px 12px;font-size:12px;"><span class="status-dot dot-green" style="display:inline-block;margin-right:4px;"></span>Live Feed Active</span>
+        </div>
+      </div>
+      <!-- Map Tabs -->
+      <div class="map-tab-bar">
+        <div class="map-tab active" data-tab="officers">Officer Deployment</div>
+        <div class="map-tab" data-tab="heatmap" id="heatmapTab">Crime Heatmap</div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr);margin-bottom:var(--space-4);">
+        <div class="stat-card card-success"><div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">On Post</div><div class="stat-value">124</div></div></div>
+        <div class="stat-card card-warning"><div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div><div class="stat-body"><div class="stat-label">Patrolling</div><div class="stat-value">15</div></div></div>
+        <div class="stat-card card-danger"><div class="stat-icon stat-icon-red"><svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="stat-body"><div class="stat-label">Off Post</div><div class="stat-value">3</div></div></div>
+        <div class="stat-card"><div class="stat-icon stat-icon-blue"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="stat-body"><div class="stat-label">Zones Covered</div><div class="stat-value">6</div></div></div>
+      </div>
+
+      <!-- OFFICER PANEL -->
+      <div class="map-panel active" id="panel-officers">
+      <!-- Map + Officer List -->
+      <div style="display:grid;grid-template-columns:1.8fr 1fr;gap:var(--space-4);margin-bottom:var(--space-4);">
+        <!-- Map -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Live Deployment Map — Patna</div>
+            <div class="map-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#1F3A5F;"></div>On Post</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2E7D32;"></div>Patrolling</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#C62828;"></div>Off Post</div>
+            </div>
+          </div>
+          <div class="card-body" style="padding:var(--space-4);">
+            <div id="deploymentMap"></div>
+          </div>
+        </div>
+
+        <!-- Officer List -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Officer Status List</div></div>
+          <div class="officer-list-panel" id="officerList"></div>
+        </div>
+      </div>
+
+      <!-- Zone Table -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Zone Coverage Summary</div></div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Zone</th><th>Station</th><th>Officers Assigned</th><th>Officers Present</th><th>Coverage</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="td-bold">Zone A — Patna City</td><td>Patna City PS</td><td>28</td><td>26</td><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:80px;height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;"><div style="width:93%;height:100%;background:var(--success);"></div></div><span style="font-size:12px;">93%</span></div></td><td><span class="badge badge-success">Good</span></td></tr>
+              <tr><td class="td-bold">Zone B — Kankarbagh</td><td>Kankarbagh PS</td><td>24</td><td>22</td><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:80px;height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;"><div style="width:92%;height:100%;background:var(--success);"></div></div><span style="font-size:12px;">92%</span></div></td><td><span class="badge badge-success">Good</span></td></tr>
+              <tr><td class="td-bold">Zone C — Gardanibagh</td><td>Gardanibagh PS</td><td>20</td><td>18</td><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:80px;height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;"><div style="width:90%;height:100%;background:var(--success);"></div></div><span style="font-size:12px;">90%</span></div></td><td><span class="badge badge-success">Good</span></td></tr>
+              <tr><td class="td-bold">Zone D — Boring Road</td><td>Boring Road PS</td><td>22</td><td>16</td><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:80px;height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;"><div style="width:73%;height:100%;background:var(--warning);"></div></div><span style="font-size:12px;">73%</span></div></td><td><span class="badge badge-warning">Partial</span></td></tr>
+              <tr><td class="td-bold">Zone E — Phulwari</td><td>Phulwari PS</td><td>18</td><td>17</td><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:80px;height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;"><div style="width:94%;height:100%;background:var(--success);"></div></div><span style="font-size:12px;">94%</span></div></td><td><span class="badge badge-success">Good</span></td></tr>
+              <tr><td class="td-bold">Zone F — Sachivalaya</td><td>Sachivalaya PS</td><td>12</td><td>10</td><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:80px;height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;"><div style="width:83%;height:100%;background:var(--warning);"></div></div><span style="font-size:12px;">83%</span></div></td><td><span class="badge badge-warning">Partial</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- HEATMAP PANEL -->
+      <div class="map-panel" id="panel-heatmap">
+        <div class="card" style="margin-bottom:var(--space-4);">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Crime Density Heatmap — Patna District</div>
+              <div class="card-subtitle">Visual intelligence instead of raw numbers — Red = High crime density</div>
+            </div>
+            <div class="time-filter-btns">
+              <div class="time-btn active" data-period="today">Today</div>
+              <div class="time-btn" data-period="week">This Week</div>
+              <div class="time-btn" data-period="month">This Month</div>
+            </div>
+          </div>
+          <div class="card-body" style="padding:var(--space-4);">
+            <div class="heat-legend" style="margin-bottom:var(--space-3);">
+              <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">Density:</span>
+              <div class="heat-grad"></div>
+              <div style="display:flex;gap:var(--space-4);font-size:11px;color:var(--text-secondary);">
+                <span style="color:var(--success);">&#9632; Low</span>
+                <span style="color:#F9A825;">&#9632; Medium</span>
+                <span style="color:var(--danger);">&#9632; High</span>
+              </div>
+            </div>
+            <div id="heatmapCanvas"></div>
+          </div>
+        </div>
+        <!-- Zone Crime Table -->
+        <div class="card zone-crime-table">
+          <div class="card-header"><div class="card-title">Zone-wise Crime Density</div><span style="font-size:12px;color:var(--text-muted);">Based on last 30 days FIRs</span></div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Zone</th><th>Station</th><th>Crimes (30d)</th><th>Hotspot Category</th><th>Risk Level</th><th>Patrol Recommended</th></tr></thead>
+              <tbody>
+                <tr><td>Zone D — Boring Road</td><td>Boring Road PS</td><td>47</td><td>Robbery, Assault</td><td><span class="badge badge-danger">High</span></td><td style="font-weight:600;color:var(--danger);">Increase to 3x per day</span></td></tr>
+                <tr><td>Zone B — Kankarbagh</td><td>Kankarbagh PS</td><td>39</td><td>Theft, Fraud</td><td><span class="badge badge-danger">High</span></td><td style="font-weight:600;color:var(--danger);">Increase to 2x per day</td></tr>
+                <tr><td>Zone A — Patna City</td><td>Patna City PS</td><td>31</td><td>Theft, Traffic</td><td><span class="badge badge-warning">Medium</span></td><td>Normal patrol cycle</td></tr>
+                <tr><td>Zone C — Gardanibagh</td><td>Gardanibagh PS</td><td>24</td><td>Domestic, Noise</td><td><span class="badge badge-warning">Medium</span></td><td>Normal patrol cycle</td></tr>
+                <tr><td>Zone F — Sachivalaya</td><td>Sachivalaya PS</td><td>12</td><td>Fraud, Minor</td><td><span class="badge badge-success">Low</span></td><td>Standard patrol</td></tr>
+                <tr><td>Zone E — Phulwari</td><td>Phulwari PS</td><td>9</td><td>Traffic, Misc</td><td><span class="badge badge-success">Low</span></td><td>Standard patrol</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wrap officer panels in active panel div -->
+    </main>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/deployment.js"></script>
+<script>
+document.querySelectorAll('.map-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.map-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.map-panel').forEach(p=>p.classList.remove('active'));
+    this.classList.add('active');
+    const panel = document.getElementById('panel-'+this.dataset.tab);
+    if (panel) panel.classList.add('active');
+    if (this.dataset.tab === 'heatmap' && !window._heatmapInit) { initHeatmap(); window._heatmapInit=true; }
+  });
+});
+document.querySelectorAll('.time-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    if (window._heatmapInit) { if(window._heatLayer) window._heatmap.removeLayer(window._heatLayer); addHeatLayer(this.dataset.period); }
+  });
+});
+if (window.location.hash === '#heatmap') {
+  setTimeout(function() { document.querySelector('[data-tab="heatmap"]').click(); }, 400);
+}
+function initHeatmap() {
+  window._heatmap = L.map('heatmapCanvas').setView([25.603, 85.133], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:18}).addTo(window._heatmap);
+  addHeatLayer('today');
+}
+
+async function addHeatLayer(period) {
+  const daysMap = { 'today': 1, 'week': 7, 'month': 30 };
+  const days = daysMap[period] || 30;
+
+  try {
+      const res = await HeatmapAPI.points(days);
+      const points = (res.data || []).map(p => [p.lat, p.lng, p.intensity]);
+      
+      window._heatLayer = L.heatLayer(points, {
+          radius: 35, blur: 25, maxZoom: 17, max: 0.95,
+          gradient: { 0.0: '#2E7D32', 0.4: '#66BB6A', 0.6: '#F9A825', 0.8: '#EF6C00', 1.0: '#C62828' }
+      }).addTo(window._heatmap);
+
+      // Load zones data as well
+      const zRes = await HeatmapAPI.zones(days);
+      const tbody = document.querySelector('.zone-crime-table tbody');
+      if (tbody && zRes.data) {
+          tbody.innerHTML = zRes.data.map(z => `
+            <tr>
+              <td>Zone ${z.station_id} — ${z.station_name}</td>
+              <td>${z.station_name} PS</td>
+              <td>${z.total_incidents}</td>
+              <td>Multiple</td>
+              <td><span class="badge badge-${z.risk_level==='high'?'danger':z.risk_level==='medium'?'warning':'success'}">${z.risk_level.charAt(0).toUpperCase() + z.risk_level.slice(1)}</span></td>
+              <td style="${z.risk_level==='high'?'font-weight:600;color:var(--danger);':''}">${z.risk_level==='high'?'Increase to 3x per day':z.risk_level==='medium'?'Increase to 2x per day':'Standard patrol'}</td>
+            </tr>
+          `).join('');
+      }
+
+  } catch (err) {
+      console.error('Heatmap Data Error: ', err);
+  }
+}
+</script>
+</body>
+</html>

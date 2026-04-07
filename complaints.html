@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Complaint Management — CopSense</title>
+  <meta name="description" content="Track and manage citizen complaints with AI priority detection." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div><div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div></div>
+    <div class="sidebar-user"><div class="sidebar-user-avatar" id="sbUserAvatar">--</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span><span class="nav-label">FIR Management</span><span class="nav-badge">7</span></a>
+      <a class="nav-item active" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span><span class="nav-badge">12</span></a>
+      <a class="nav-item" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span><span class="nav-badge" style="background:#F9A825;">2</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left"><button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">Complaints</span></div><span class="district-badge">Patna District</span></div>
+      <div class="navbar-right"><div class="navbar-datetime" id="navDatetime">--</div><div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div></div>
+    </nav>
+
+    <main class="page-body">
+      <div class="page-header-row">
+        <div><h1>Complaint Management</h1><p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">AI-powered complaint tracking with automatic priority classification</p></div>
+        <button class="btn btn-primary btn-sm" data-modal-open="addComplaintModal"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Complaint</button>
+      </div>
+
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr);margin-bottom:var(--space-5);">
+        <div class="stat-card card-info"><div class="stat-icon stat-icon-blue"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="stat-body"><div class="stat-label">Total Complaints</div><div class="stat-value">187</div></div></div>
+        <div class="stat-card card-danger"><div class="stat-icon stat-icon-red"><svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div class="stat-body"><div class="stat-label">High Priority</div><div class="stat-value">23</div></div></div>
+        <div class="stat-card card-warning"><div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-body"><div class="stat-label">Pending / In Progress</div><div class="stat-value">65</div></div></div>
+        <div class="stat-card card-success"><div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Resolved</div><div class="stat-value">99</div></div></div>
+      </div>
+
+      <!-- AI Notice -->
+      <div class="alert alert-info" style="margin-bottom:var(--space-4);">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span><strong>AI Priority Detection active.</strong> Complaints containing keywords like "assault", "threat", "missing", "violence", or "urgent" are automatically flagged as High Priority.</span>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Complaint Register</div>
+          <div class="toolbar-right">
+            <div class="search-box"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="cmpSearch" placeholder="Search complaint..."/></div>
+            <select class="form-control form-select" id="cmpStatus" style="width:140px;height:36px;font-size:13px;"><option value="">All Status</option><option>Open</option><option>In Progress</option><option>Resolved</option><option>Escalated</option></select>
+            <select class="form-control form-select" id="cmpPriority" style="width:130px;height:36px;font-size:13px;"><option value="">All Priority</option><option>High</option><option>Normal</option></select>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table" id="complaintTable">
+            <thead><tr><th>ID</th><th>Date</th><th>Citizen Name</th><th>Type</th><th>Station</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="cmpTableBody"></tbody>
+          </table>
+        </div>
+        <div class="card-footer flex flex-between" style="font-size:12px;color:var(--text-secondary);">
+          <span id="cmpPageInfo">—</span>
+          <div class="flex flex-gap-2">
+            <button class="btn btn-secondary btn-sm" id="cmpPrev" disabled>Previous</button>
+            <button class="btn btn-secondary btn-sm" id="cmpNext">Next</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Complaint Modal -->
+<div class="modal-overlay" id="addComplaintModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Submit Complaint</div><button class="modal-close" data-modal-close="addComplaintModal"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Citizen Name <span class="required">*</span></label><input type="text" class="form-control" id="cmpName" placeholder="Full name"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Complaint Type <span class="required">*</span></label><select class="form-control form-select" id="cmpType"><option value="">Select type</option><option>Police Misconduct</option><option>Response Delay</option><option>Assault / Violence</option><option>Theft / Property</option><option>Missing Person</option><option>Noise / Nuisance</option><option>Other</option></select></div>
+        <div class="form-group"><label class="form-label">Station <span class="required">*</span></label><select class="form-control form-select" id="cmpStation"><option value="">Select</option><option>Patna City</option><option>Kankarbagh</option><option>Gardanibagh</option><option>Boring Road</option><option>Phulwari</option><option>Sachivalaya</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Complaint Description <span class="required">*</span></label><textarea class="form-control" id="cmpDesc" rows="4" placeholder="Describe your complaint in detail... (mention urgency, violence, threat, missing if applicable)"></textarea></div>
+      <div id="aiPriorityPreview" style="display:none;margin-top:8px;"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-modal-close="addComplaintModal">Cancel</button><button class="btn btn-primary" id="saveComplaintBtn">Submit Complaint</button></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/complaints.js"></script>
+</body>
+</html>

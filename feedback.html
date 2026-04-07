@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Citizen Feedback — CopSense</title>
+  <meta name="description" content="Submit feedback about police officers and stations. AI-powered priority detection with NLP." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Citizen Flow Styles ── */
+    .citizen-flow { max-width: 760px; margin: 0 auto; }
+    .flow-steps { display:flex; gap:0; margin-bottom:32px; }
+    .flow-step { flex:1; text-align:center; position:relative; }
+    .flow-step::after { content:''; position:absolute; top:16px; left:50%; width:100%; height:2px; background:var(--border); z-index:0; }
+    .flow-step:last-child::after { display:none; }
+    .step-circle { width:32px; height:32px; border-radius:50%; background:var(--border); color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; position:relative; z-index:1; transition:background 0.3s, color 0.3s; }
+    .flow-step.active .step-circle { background:var(--primary); color:#fff; }
+    .flow-step.done .step-circle { background:#2E7D32; color:#fff; }
+    .step-label { font-size:11px; color:var(--text-muted); margin-top:6px; font-weight:500; }
+    .flow-step.active .step-label { color:var(--primary); }
+    .flow-step.done .step-label { color:#2E7D32; }
+    .flow-panel { display:none; }
+    .flow-panel.active { display:block; }
+
+    /* Station cards */
+    .station-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-top:16px; }
+    .station-card { background:var(--bg-card); border:2px solid var(--border); border-radius:var(--radius); padding:16px; cursor:pointer; transition:border-color 0.2s, box-shadow 0.2s; }
+    .station-card:hover { border-color:var(--primary-light); box-shadow:var(--shadow-sm); }
+    .station-card.selected { border-color:var(--primary); background:rgba(46,92,138,0.04); }
+    .station-card-name { font-weight:700; font-size:14px; margin-bottom:4px; }
+    .station-card-zone { font-size:11px; color:var(--text-muted); }
+    .station-card-count { font-size:12px; color:var(--primary); margin-top:8px; font-weight:500; }
+
+    /* Officer selection */
+    .officer-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-top:16px; }
+    .officer-card { background:var(--bg-card); border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; transition:border-color 0.2s, box-shadow 0.2s; position:relative; }
+    .officer-card:hover { border-color:var(--primary-light); }
+    .officer-card.selected { border-color:var(--primary); background:rgba(46,92,138,0.05); }
+    .officer-avatar { width:52px; height:52px; border-radius:50%; background:var(--primary); color:#fff; font-weight:700; font-size:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; }
+    .officer-name { font-weight:600; font-size:13px; margin-bottom:4px; }
+    .officer-badge { font-size:11px; color:var(--text-muted); font-family:var(--font-mono); }
+    .officer-role-tag { font-size:10px; margin-top:6px; padding:2px 6px; border-radius:100px; background:rgba(46,92,138,0.1); color:var(--primary); font-weight:600; display:inline-block; }
+    .officer-check { position:absolute; top:8px; right:8px; width:20px; height:20px; border-radius:50%; background:var(--primary); display:none; align-items:center; justify-content:center; }
+    .officer-check svg { width:12px; height:12px; stroke:#fff; fill:none; stroke-width:3; }
+    .officer-card.selected .officer-check { display:flex; }
+    .station-target-opt { margin-top:16px; padding:14px; background:rgba(249,168,37,0.08); border:2px dashed rgba(249,168,37,0.4); border-radius:var(--radius); cursor:pointer; display:flex; align-items:center; gap:12px; font-weight:600; font-size:13px; }
+    .station-target-opt.selected { background:rgba(249,168,37,0.15); border-color:#F9A825; }
+
+    /* Rating */
+    .rating-stars { display:flex; gap:6px; }
+    .star { width:36px; height:36px; cursor:pointer; stroke:#D6DCE5; fill:#D6DCE5; transition:fill 0.15s, stroke 0.15s; }
+    .star.active, .star.hover { stroke:#F9A825; fill:#F9A825; }
+    .star-sm { display:inline-flex; gap:2px; }
+    .star-sm svg { width:12px; height:12px; stroke:#F9A825; fill:#F9A825; }
+
+    /* AI result */
+    .ai-result { padding:14px 16px; border-radius:var(--radius); margin-top:12px; border:1px solid; }
+    .ai-result.critical { background:#FFEBEE; border-color:rgba(198,40,40,0.3); color:#B71C1C; }
+    .ai-result.high { background:#FFF3E0; border-color:rgba(249,168,37,0.4); color:#7B5800; }
+    .ai-result.medium { background:#E3F2FD; border-color:rgba(21,101,192,0.3); color:#1565C0; }
+    .ai-result.low { background:#E8F5E9; border-color:rgba(46,125,50,0.3); color:#2E7D32; }
+
+    /* Feedback cards (admin view) */
+    .feedback-card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:var(--space-4); margin-bottom:var(--space-5); }
+    .feedback-card-item { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:var(--space-4); box-shadow:var(--shadow-sm); }
+    .feedback-quote { font-size:13px; color:var(--text-secondary); line-height:1.6; margin:var(--space-3) 0; font-style:italic; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div><div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div></div>
+    <div class="sidebar-user"><div class="sidebar-user-avatar" id="sbUserAvatar">--</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div><a class="nav-item" data-page="dashboard.html" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" data-page="fir.html" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></span><span class="nav-label">FIR Management</span></a>
+      <a class="nav-item" data-page="complaints.html" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span></a>
+      <a class="nav-item" data-page="custody.html" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item" data-page="crowd-planning.html" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item" data-page="deployment.html" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item" data-page="duty.html" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item active" data-page="feedback.html" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item" data-page="alerts.html" href="alerts.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/></svg></span><span class="nav-label">Smart Alerts</span></a>
+      <a class="nav-item" data-page="reports.html" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" data-page="settings.html" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left"><button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">Citizen Feedback</span></div><span class="district-badge">Patna District</span></div>
+      <div class="navbar-right"><div class="navbar-datetime" id="navDatetime">--</div><div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div></div>
+    </nav>
+
+    <main class="page-body">
+      <div class="page-header-row">
+        <div><h1>Citizen Feedback</h1><p style="color:var(--text-secondary);font-size:13px;margin-top:4px;" id="feedbackSubtitle">Submit feedback on police officers. AI classifies urgency automatically.</p></div>
+        <button class="btn btn-primary btn-sm" id="submitFeedbackBtn" onclick="startFeedbackFlow()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Submit Feedback</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr);margin-bottom:var(--space-5);">
+        <div class="stat-card card-info"><div class="stat-icon stat-icon-blue"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="stat-body"><div class="stat-label">Total Feedbacks</div><div class="stat-value" id="statTotal">—</div></div></div>
+        <div class="stat-card card-success"><div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Positive / Low</div><div class="stat-value" id="statPositive">—</div></div></div>
+        <div class="stat-card card-danger"><div class="stat-icon stat-icon-red"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div class="stat-body"><div class="stat-label">Critical / Escalated</div><div class="stat-value" id="statCritical">—</div></div></div>
+        <div class="stat-card card-warning"><div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="stat-body"><div class="stat-label">High Priority</div><div class="stat-value" id="statHigh">—</div></div></div>
+      </div>
+
+      <!-- Charts (Officers & Admin view) -->
+      <div id="adminSection">
+        <div class="charts-row" style="margin-bottom:var(--space-5);">
+          <div class="card"><div class="card-header"><div class="card-title">Monthly Feedback Trend</div></div><div class="card-body"><div class="chart-container"><canvas id="feedbackTrend"></canvas></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Feedback by Sensitivity</div></div><div class="card-body"><div class="chart-container"><canvas id="feedbackType"></canvas></div></div></div>
+        </div>
+        <div class="section-title">Recent Feedback</div>
+        <div class="feedback-card-grid" id="feedbackGrid"></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">All Feedback</div><div class="toolbar-right"><div class="search-box"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="fbSearch" placeholder="Search feedback..."/></div></div></div>
+          <div class="card-body" style="padding:0;"><table class="data-table" id="feedbackTable"><thead><tr><th>ID</th><th>Citizen</th><th>Station</th><th>Officer</th><th>Type</th><th>Rating</th><th>AI Priority</th><th>Date</th></tr></thead><tbody id="feedbackBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- Citizen own submissions -->
+      <div id="citizenSection" style="display:none;">
+        <div class="section-title">Your Submitted Feedback</div>
+        <div id="myFeedbackList" style="display:grid;gap:12px;"></div>
+        <div id="myFeedbackEmpty" style="display:none;" class="table-empty">You haven't submitted any feedback yet. Click "Submit Feedback" to get started.</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ========== FEEDBACK FLOW MODAL ========== -->
+<div class="modal-overlay" id="feedbackFlowModal">
+  <div class="modal" style="max-width:680px;width:100%;">
+    <div class="modal-header">
+      <div class="modal-title" id="flowTitle">Submit Feedback</div>
+      <button class="modal-close" onclick="closeModal('feedbackFlowModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+
+      <!-- Step Indicators -->
+      <div class="flow-steps" id="flowStepIndicators">
+        <div class="flow-step active" id="stepInd1"><div class="step-circle">1</div><div class="step-label">Select Station</div></div>
+        <div class="flow-step" id="stepInd2"><div class="step-circle">2</div><div class="step-label">Select Officer</div></div>
+        <div class="flow-step" id="stepInd3"><div class="step-circle">3</div><div class="step-label">Write Feedback</div></div>
+      </div>
+
+      <!-- Step 1: Station -->
+      <div class="flow-panel active" id="flowStep1">
+        <div class="section-title" style="margin-bottom:8px;">Which Police Station?</div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">Select the police station you want to give feedback about.</p>
+        <div class="station-grid" id="stationGrid">
+          <div style="padding:40px;text-align:center;color:var(--text-muted);">Loading stations…</div>
+        </div>
+        <span class="field-error" id="err-station" style="display:block;margin-top:8px;"></span>
+      </div>
+
+      <!-- Step 2: Officer -->
+      <div class="flow-panel" id="flowStep2">
+        <div class="section-title" style="margin-bottom:8px;" id="step2Title">Select Officer(s)</div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">Select one or more officers, or choose "Entire Station" to give general feedback.</p>
+        <!-- Entire Station option -->
+        <div class="station-target-opt" id="entireStationOpt" onclick="toggleEntireStation()">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--primary);fill:none;stroke-width:2;flex-shrink:0;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Feedback for Entire Station (no specific officer)
+        </div>
+        <div class="officer-grid" id="officerGrid">
+          <div style="padding:40px;text-align:center;color:var(--text-muted);">Loading officers…</div>
+        </div>
+        <span class="field-error" id="err-officer" style="display:block;margin-top:8px;"></span>
+      </div>
+
+      <!-- Step 3: Feedback Form -->
+      <div class="flow-panel" id="flowStep3">
+        <div class="form-group">
+          <label class="form-label">Feedback Type <span class="required">*</span></label>
+          <select class="form-control form-select" id="fbType">
+            <option value="">Select feedback type</option>
+            <option value="officer">Positive — Good Service</option>
+            <option value="station">Negative — Poor Behavior</option>
+            <option value="officer">Misconduct / Corruption</option>
+            <option value="station">Response Delay</option>
+            <option value="multiple">General Suggestion</option>
+          </select>
+          <span class="field-error" id="err-fbType"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rating <span class="required">*</span></label>
+          <div class="rating-stars" id="ratingStars">
+            <svg class="star" viewBox="0 0 24 24" data-val="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star" viewBox="0 0 24 24" data-val="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star" viewBox="0 0 24 24" data-val="3"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star" viewBox="0 0 24 24" data-val="4"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star" viewBox="0 0 24 24" data-val="5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <input type="hidden" id="fbRating" value="0"/>
+          <span class="field-error" id="err-rating"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Feedback <span class="required">*</span></label>
+          <textarea class="form-control" id="fbComment" rows="5" placeholder="Describe your experience in detail (minimum 10 characters)…"></textarea>
+          <span class="field-error" id="err-comment"></span>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="commentCount">0 / 10 characters minimum</div>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="fbAnonymous" style="width:16px;height:16px;"/>
+            Submit anonymously (your name will not be shown to officers)
+          </label>
+        </div>
+        <div id="aiPreview" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="modal-footer" id="flowFooter">
+      <button class="btn btn-secondary" id="flowBackBtn" style="display:none;" onclick="flowBack()">← Back</button>
+      <button class="btn btn-secondary" onclick="closeModal('feedbackFlowModal')">Cancel</button>
+      <button class="btn btn-primary" id="flowNextBtn" onclick="flowNext()">Next: Select Officer →</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/feedback.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>AI Crowd Planning — CopSense</title>
+  <meta name="description" content="AI-powered crowd and event management planning system for police resource allocation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .ai-input-panel { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-6);box-shadow:var(--shadow-sm); }
+    .ai-result-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden; }
+    .ai-result-card-header { background:var(--primary);color:#fff;padding:var(--space-4) var(--space-5);display:flex;align-items:center;gap:var(--space-3); }
+    .ai-result-card-header h2 { font-size:16px;font-weight:700;color:#fff; }
+    .ai-result-card-body { padding:var(--space-5); }
+    .ai-result-big-number { font-size:48px;font-weight:800;color:var(--primary);line-height:1;margin-bottom:4px; }
+    .ai-result-unit { font-size:14px;color:var(--text-secondary);margin-bottom:16px; }
+    .ai-resources-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3);margin-bottom:var(--space-4); }
+    .resource-box { background:#f7f9fc;border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:var(--space-4);text-align:center; }
+    .resource-icon { width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-2); }
+    .resource-icon svg { width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round; }
+    .resource-val { font-size:24px;font-weight:800;color:var(--text-primary); }
+    .resource-lbl { font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px; }
+    .plan-history-table .data-table tbody td { padding:10px var(--space-4);font-size:13px; }
+    .venue-score-bar { height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;margin-top:6px; }
+    .venue-score-fill { height:100%;border-radius:4px;background:var(--success); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div><div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div></div>
+    <div class="sidebar-user"><div class="sidebar-user-avatar" id="sbUserAvatar">--</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div><a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></span><span class="nav-label">FIR Management</span><span class="nav-badge">7</span></a>
+      <a class="nav-item" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span><span class="nav-badge">12</span></a>
+      <a class="nav-item" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span><span class="nav-badge" style="background:#F9A825;">2</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item active" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left"><button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">AI Crowd Planning</span></div><span class="district-badge">Patna District</span></div>
+      <div class="navbar-right"><div class="navbar-datetime" id="navDatetime">--</div><div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div></div>
+    </nav>
+
+    <main class="page-body">
+      <div class="page-header-row">
+        <div>
+          <h1>AI Crowd &amp; Event Planning</h1>
+          <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Enter event details — AI will calculate police deployment, ambulances, and risk assessment</p>
+        </div>
+        <span class="badge badge-primary" style="font-size:12px;padding:6px 12px;">AI Prediction Engine Active</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--space-5);margin-bottom:var(--space-5);">
+        <!-- Input Panel -->
+        <div class="ai-input-panel">
+          <div style="font-size:15px;font-weight:700;margin-bottom:var(--space-5);display:flex;align-items:center;gap:var(--space-2);">
+            <svg width="18" height="18" viewBox="0 0 24 24" style="stroke:var(--secondary);fill:none;stroke-width:2;stroke-linecap:round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Event Details
+          </div>
+          <div class="form-group"><label class="form-label">Event Name <span class="required">*</span></label><input type="text" class="form-control" id="evtName" placeholder="e.g. Ganesh Puja Procession"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Event Type <span class="required">*</span></label><select class="form-control form-select" id="evtType"><option value="">Select type</option><option>Religious Festival</option><option>Political Rally</option><option>Sports Event</option><option>Cultural Program</option><option>Protest / March</option><option>Funeral Procession</option><option>Fair / Mela</option></select></div>
+            <div class="form-group"><label class="form-label">Event Date <span class="required">*</span></label><input type="date" class="form-control" id="evtDate"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Location / Venue <span class="required">*</span></label><input type="text" class="form-control" id="evtLocation" placeholder="e.g. Gandhi Maidan, Patna"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Expected Crowd Size <span class="required">*</span></label><input type="number" class="form-control" id="evtCrowd" placeholder="e.g. 25000" min="100"/></div>
+            <div class="form-group"><label class="form-label">Duration (hours)</label><input type="number" class="form-control" id="evtDuration" placeholder="e.g. 4" min="1" max="72"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Previous Incidents at Venue</label><select class="form-control form-select" id="evtIncidents"><option value="0">None</option><option value="1">Minor (1–2 incidents)</option><option value="3">Moderate (3–5)</option><option value="6">High (6+ incidents)</option></select></div>
+          <div class="form-group"><label class="form-label">VIP / Dignitary Present</label><select class="form-control form-select" id="evtVIP"><option value="0">No</option><option value="1">Yes</option></select></div>
+          <button class="btn btn-primary btn-lg" id="analyzeBtn" style="width:100%;margin-top:var(--space-2);">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            Run AI Analysis
+          </button>
+        </div>
+
+        <!-- AI Result Panel -->
+        <div id="aiResultPanel" style="display:none;">
+          <div class="ai-result-card" style="margin-bottom:var(--space-4);">
+            <div class="ai-result-card-header">
+              <svg width="22" height="22" viewBox="0 0 24 24" style="stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+              <div>
+                <h2>AI Analysis Complete</h2>
+                <div style="font-size:11px;color:rgba(255,255,255,.7);" id="aiEventLabel">—</div>
+              </div>
+            </div>
+            <div class="ai-result-card-body">
+              <div style="margin-bottom:var(--space-4);">
+                <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Risk Assessment</div>
+                <div id="aiRiskBadge" class="risk-meter" style="max-width:200px;">—</div>
+              </div>
+              <div class="ai-resources-grid">
+                <div class="resource-box">
+                  <div class="resource-icon" style="background:#E8EDF5;color:var(--primary);"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+                  <div class="resource-val" id="aiPolice">—</div>
+                  <div class="resource-lbl">Police Officers</div>
+                </div>
+                <div class="resource-box">
+                  <div class="resource-icon" style="background:var(--danger-bg);color:var(--danger);"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                  <div class="resource-val" id="aiAmbulance">—</div>
+                  <div class="resource-lbl">Ambulances</div>
+                </div>
+                <div class="resource-box">
+                  <div class="resource-icon" style="background:var(--warning-bg);color:#7B5800;"><svg viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/></svg></div>
+                  <div class="resource-val" id="aiBarricades">—</div>
+                  <div class="resource-lbl">Barricade Points</div>
+                </div>
+                <div class="resource-box">
+                  <div class="resource-icon" style="background:var(--success-bg);color:var(--success);"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>  </div>
+                  <div class="resource-val" id="aiVenues">—</div>
+                  <div class="resource-lbl">CCTV Points</div>
+                </div>
+              </div>
+              <div style="background:#f7f9fc;border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:8px;">Venue Suitability Score</div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <div style="flex:1;"><div class="venue-score-bar"><div class="venue-score-fill" id="venueFill" style="width:0%;transition:width .6s ease;"></div></div></div>
+                  <div style="font-weight:700;font-size:14px;color:var(--primary);" id="venueScore">—</div>
+                </div>
+              </div>
+              <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;" id="aiRemarks">—</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--space-3);">
+            <button class="btn btn-secondary" style="flex:1;" onclick="window.print()">Print Plan</button>
+            <button class="btn btn-primary" style="flex:1;" id="saveEventPlanBtn">Save Event Plan</button>
+          </div>
+        </div>
+
+        <!-- Placeholder when no result -->
+        <div id="aiNoResult" class="ai-input-panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;">
+          <svg width="56" height="56" viewBox="0 0 24 24" style="stroke:var(--border);fill:none;stroke-width:1.2;margin-bottom:var(--space-4);"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+          <div style="font-size:15px;font-weight:600;color:var(--text-secondary);margin-bottom:var(--space-2);">AI Result will appear here</div>
+          <div style="font-size:13px;color:var(--text-muted);">Enter event details and click<br/>"Run AI Analysis" to get recommendations</div>
+        </div>
+      </div>
+
+      <!-- Past Events Table -->
+      <div class="card plan-history-table">
+        <div class="card-header"><div class="card-title">Recent Event Plans</div></div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table" id="eventHistoryTable">
+            <thead><tr><th>Event Name</th><th>Type</th><th>Date</th><th>Location</th><th>Crowd</th><th>Police Req.</th><th>Risk</th></tr></thead>
+            <tbody id="eventHistoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/crowd-planning.js"></script>
+</body>
+</html>

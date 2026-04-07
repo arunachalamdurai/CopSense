@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Reports &amp; Analytics — CopSense</title>
+  <meta name="description" content="Comprehensive crime reports, station performance, and analytics for district-level decision support." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div><div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div></div>
+    <div class="sidebar-user"><div class="sidebar-user-avatar" id="sbUserAvatar">--</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div><a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></span><span class="nav-label">FIR Management</span></a>
+      <a class="nav-item" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span></a>
+      <a class="nav-item" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item active" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left"><button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">Reports &amp; Analytics</span></div><span class="district-badge">Patna District</span></div>
+      <div class="navbar-right"><div class="navbar-datetime" id="navDatetime">--</div><div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div></div>
+    </nav>
+
+    <main class="page-body">
+      <div class="page-header-row">
+        <div><h1>Reports &amp; Analytics</h1><p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Monthly crime analysis, station performance, and district-level insights</p></div>
+        <div class="flex flex-gap-2">
+          <select class="form-control form-select" style="width:160px;height:36px;font-size:13px;" id="reportMonth">
+            <option>April 2026</option><option>March 2026</option><option>February 2026</option><option>January 2026</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="window.print()"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print</button>
+          <button class="btn btn-primary btn-sm" onclick="exportTableToCSV('stationPerfTable','station_report.csv')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr);margin-bottom:var(--space-5);">
+        <div class="stat-card card-info"><div class="stat-icon stat-icon-blue"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div class="stat-body"><div class="stat-label">FIRs This Month</div><div class="stat-value">128</div><div class="stat-trend up"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>+8.5% vs last month</div></div></div>
+        <div class="stat-card card-success"><div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Charge Sheet Rate</div><div class="stat-value">73%</div><div class="stat-trend up"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>+2% improvement</div></div></div>
+        <div class="stat-card card-warning"><div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-body"><div class="stat-label">Avg. Response Time</div><div class="stat-value">14<span style="font-size:16px;"> min</span></div><div class="stat-trend down"><svg viewBox="0 0 24 24"><polyline points="18 9 12 15 6 9"/></svg>-3 min vs last month</div></div></div>
+        <div class="stat-card card-success"><div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="stat-body"><div class="stat-label">Citizens Satisfied</div><div class="stat-value">87%</div><div class="stat-trend up"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>+5% this month</div></div></div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--space-4);margin-bottom:var(--space-4);">
+        <div class="card"><div class="card-header"><div class="card-title">Crime Trend — 12 Months</div><div class="card-subtitle">FIR registrations by month across Patna District</div></div><div class="card-body"><div class="chart-container"><canvas id="annualTrend"></canvas></div></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Crime Categories</div></div><div class="card-body"><div class="chart-container"><canvas id="crimeCatPie"></canvas></div></div></div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin-bottom:var(--space-5);">
+        <div class="card"><div class="card-header"><div class="card-title">Station Risk Score</div><div class="card-subtitle">AI-computed score based on pending + complaints + response time</div></div><div class="card-body"><div class="chart-container"><canvas id="riskScore"></canvas></div></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Monthly Complaint Resolution</div></div><div class="card-body"><div class="chart-container"><canvas id="resolutionBar"></canvas></div></div></div>
+      </div>
+
+      <!-- Station Performance Table -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Station Performance Report — April 2026</div></div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table" id="stationPerfTable">
+            <thead><tr><th>Station</th><th>FIRs Filed</th><th>Resolved</th><th>Resolution %</th><th>Complaints Recvd</th><th>Avg Response (min)</th><th>Absentees</th><th>Risk Score</th><th>Grade</th></tr></thead>
+            <tbody>
+              <tr><td class="td-bold">Patna City</td><td>32</td><td>24</td><td>75%</td><td>18</td><td>12</td><td>1</td><td>38</td><td><span class="badge badge-success">A</span></td></tr>
+              <tr><td class="td-bold">Kankarbagh</td><td>27</td><td>19</td><td>70%</td><td>22</td><td>16</td><td>2</td><td>55</td><td><span class="badge badge-warning">B</span></td></tr>
+              <tr><td class="td-bold">Gardanibagh</td><td>19</td><td>14</td><td>73%</td><td>14</td><td>14</td><td>0</td><td>42</td><td><span class="badge badge-success">A</span></td></tr>
+              <tr><td class="td-bold">Boring Road</td><td>24</td><td>16</td><td>67%</td><td>28</td><td>20</td><td>3</td><td>72</td><td><span class="badge badge-danger">C</span></td></tr>
+              <tr><td class="td-bold">Phulwari</td><td>15</td><td>11</td><td>73%</td><td>10</td><td>13</td><td>0</td><td>35</td><td><span class="badge badge-success">A</span></td></tr>
+              <tr><td class="td-bold">Sachivalaya</td><td>11</td><td>9</td><td>82%</td><td>8</td><td>10</td><td>1</td><td>28</td><td><span class="badge badge-success">A+</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script>
+'use strict';
+// Auth and RBAC enforced by common.js
+
+document.addEventListener('DOMContentLoaded', function() {
+  const months12 = ['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr'];
+
+  new Chart(document.getElementById('annualTrend'),{
+    type:'line',
+    data:{ labels:months12, datasets:[
+      { label:'Total FIRs',data:[88,92,105,98,112,108,103,115,110,119,120,128],borderColor:'#2E5C8A',backgroundColor:'rgba(46,92,138,.12)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:'#2E5C8A' },
+      { label:'Resolved',  data:[60,65,78,70,82,79,74,88,83,91,87,94],borderColor:'#2E7D32',backgroundColor:'rgba(46,125,50,.08)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:'#2E7D32' },
+    ]},
+    options:{ responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true,grid:{color:'#EDF0F5'}},x:{grid:{display:false}}} }
+  });
+
+  new Chart(document.getElementById('crimeCatPie'),{
+    type:'pie',
+    data:{ labels:['Theft','Assault','Fraud','Robbery','Cybercrime','Missing','Other'],datasets:[{data:[38,22,18,12,8,6,24],backgroundColor:['#2E5C8A','#C62828','#F9A825','#1F3A5F','#7B1FA2','#2E7D32','#90A4AE'],borderWidth:2,borderColor:'#fff'}]},
+    options:{ responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}} }
+  });
+
+  new Chart(document.getElementById('riskScore'),{
+    type:'bar',
+    data:{ labels:['Patna City','Kankarbagh','Gardanibagh','Boring Rd','Phulwari','Sachivalaya'],datasets:[{label:'Risk Score',data:[38,55,42,72,35,28],backgroundColor:['#2E7D32','#F9A825','#2E7D32','#C62828','#2E7D32','#2E7D32'],borderRadius:4}]},
+    options:{ responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100,grid:{color:'#EDF0F5'}},y:{grid:{display:false}}} }
+  });
+
+  new Chart(document.getElementById('resolutionBar'),{
+    type:'bar',
+    data:{ labels:['Jan','Feb','Mar','Apr'],datasets:[
+      { label:'Received',data:[142,118,128,137],backgroundColor:'#2E5C8A',borderRadius:4 },
+      { label:'Resolved',data:[105,89,102,108],backgroundColor:'#2E7D32',borderRadius:4 },
+    ]},
+    options:{ responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true,grid:{color:'#EDF0F5'}},x:{grid:{display:false}}} }
+  });
+});
+</script>
+</body>
+</html>

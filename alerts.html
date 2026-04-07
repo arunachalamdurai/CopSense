@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Smart Alert Center — CopSense</title>
+  <meta name="description" content="AI-powered smart alert system that automatically flags critical cases, delays, and absentee officers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ---- Alert Feed ---- */
+    .alert-feed { display: flex; flex-direction: column; gap: var(--space-3); }
+
+    .smart-alert-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-4) var(--space-5);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .smart-alert-card:hover { box-shadow: var(--shadow); transform: translateX(2px); }
+
+    .smart-alert-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+    }
+    .sac-critical::before { background: var(--danger); }
+    .sac-high::before     { background: var(--warning); }
+    .sac-warning::before  { background: #1565C0; }
+    .sac-info::before     { background: var(--success); }
+
+    .sac-icon-wrap {
+      width: 46px; height: 46px;
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sac-icon-wrap svg {
+      width: 22px; height: 22px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sac-icon-critical { background: var(--danger-bg); color: var(--danger); }
+    .sac-icon-high     { background: var(--warning-bg); color: #7B5800; }
+    .sac-icon-warning  { background: var(--info-bg);    color: var(--info); }
+    .sac-icon-info     { background: var(--success-bg); color: var(--success); }
+
+    .sac-body { flex: 1; min-width: 0; }
+    .sac-header { display: flex; align-items: center; gap: var(--space-2); margin-bottom: 4px; flex-wrap: wrap; }
+    .sac-title  { font-size: 14px; font-weight: 700; }
+    .sac-meta   { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .sac-desc   { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+    .sac-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap; }
+    .sac-time   { font-size: 11px; color: var(--text-muted); white-space: nowrap; text-align: right; }
+
+    .priority-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .pb-critical { background: var(--danger); color: #fff; animation: pulse-badge 2s infinite; }
+    .pb-high     { background: var(--warning); color: #fff; }
+    .pb-warning  { background: #1565C0; color: #fff; }
+    .pb-info     { background: var(--success); color: #fff; }
+
+    @keyframes pulse-badge {
+      0%,100% { box-shadow: 0 0 0 0 rgba(198,40,40,.4); }
+      50%      { box-shadow: 0 0 0 5px rgba(198,40,40,0); }
+    }
+
+    /* AI Score Bar */
+    .ai-score-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .score-bar-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 10px var(--space-4);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .score-bar-row:last-child { border-bottom: none; }
+    .score-station { font-size: 13px; font-weight: 600; width: 130px; flex-shrink: 0; }
+    .score-bar-wrap { flex: 1; height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+    .score-bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+    .score-num { font-size: 12px; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0; }
+
+    /* Filter tabs */
+    .filter-tabs { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
+    .filter-tab {
+      padding: 6px var(--space-4); border: 1px solid var(--border);
+      border-radius: 100px; font-size: 12px; font-weight: 600; cursor: pointer;
+      background: var(--bg-card); color: var(--text-secondary);
+      transition: background var(--transition), color var(--transition), border-color var(--transition);
+    }
+    .filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .filter-tab:hover:not(.active) { border-color: var(--secondary); color: var(--primary); }
+
+    /* Blinking dot for live */
+    .live-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--danger);
+      animation: blink-dot 1.2s infinite;
+    }
+    @keyframes blink-dot { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+
+    /* Auto-refresh countdown */
+    .refresh-bar {
+      height: 3px; background: var(--border-light);
+      border-radius: 2px; overflow: hidden; margin-top: var(--space-2);
+    }
+    .refresh-fill {
+      height: 100%; background: var(--secondary);
+      border-radius: 2px;
+      transition: width .1s linear;
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 6v8c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6L12 2z"/><polyline points="8 12 10.5 14.5 16 9"/></svg></div>
+      <div class="sidebar-brand-text"><div class="sidebar-brand-name">CopSense</div><div class="sidebar-brand-tagline">Bihar Police · MIS</div></div>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" id="sbUserAvatar">--</div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sbUserName">Loading...</div><div class="sidebar-user-role" id="sbUserRole">—</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label">Dashboard</span></a>
+
+      <div class="nav-section-label">Intelligence</div>
+      <a class="nav-item active" href="alerts.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span class="nav-label">Smart Alerts</span><span class="nav-badge" id="nbAlertCount">5</span></a>
+      <a class="nav-item" href="deployment.html#heatmap"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.76-16.79 5.76m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg></span><span class="nav-label">Crime Heatmap</span></a>
+      <a class="nav-item" href="emergency.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Emergency Response</span></a>
+
+      <div class="nav-section-label">Operations</div>
+      <a class="nav-item" href="fir.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span><span class="nav-label">FIR Management</span><span class="nav-badge">7</span></a>
+      <a class="nav-item" href="complaints.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Complaints</span><span class="nav-badge">12</span></a>
+      <a class="nav-item" href="custody.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="nav-label">Custody Safety</span><span class="nav-badge" style="background:#F9A825;">2</span></a>
+      <div class="nav-section-label">Planning</div>
+      <a class="nav-item" href="crowd-planning.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="nav-label">AI Crowd Planning</span></a>
+      <a class="nav-item" href="deployment.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span class="nav-label">Deployment Map</span></a>
+      <a class="nav-item" href="duty.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Officer Duty</span></a>
+      <div class="nav-section-label">Community</div>
+      <a class="nav-item" href="feedback.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="nav-label">Citizen Feedback</span></a>
+      <div class="nav-section-label">Reports</div>
+      <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Reports &amp; Analytics</span></a>
+      <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" style="cursor:pointer;"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label">Logout</span></div></div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" id="mainContent">
+    <nav class="top-navbar" id="topNavbar">
+      <div class="navbar-left">
+        <button class="sidebar-toggle-btn" id="sidebarToggle"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <div class="navbar-breadcrumb"><span>CopSense</span><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#9E9E9E;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg><span class="current">Smart Alert Center</span></div>
+        <span class="district-badge">Patna District</span>
+      </div>
+      <div class="navbar-right">
+        <div class="navbar-datetime" id="navDatetime">--</div>
+        <div class="navbar-user"><div class="navbar-user-avatar" id="navUserAvatar">--</div><div><div class="navbar-user-name" id="navUserName">Loading</div><div class="navbar-user-role" id="navUserRole">—</div></div></div>
+      </div>
+    </nav>
+
+    <main class="page-body">
+
+      <!-- Page Header -->
+      <div class="page-header-row">
+        <div>
+          <h1>Smart Alert Center</h1>
+          <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">
+            <span class="live-dot"></span>
+            &nbsp;Officers don't search data — data alerts officers. &nbsp;·&nbsp; Auto-refreshes every 30 seconds
+          </p>
+        </div>
+        <div class="flex flex-gap-2">
+          <button class="btn btn-secondary btn-sm" id="refreshBtn">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Refresh Now
+          </button>
+          <button class="btn btn-danger btn-sm" id="markAllBtn">Mark All Read</button>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr);margin-bottom:var(--space-5);">
+        <div class="stat-card card-danger">
+          <div class="stat-icon stat-icon-red"><svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
+          <div class="stat-body"><div class="stat-label">Critical Alerts</div><div class="stat-value" id="sc-critical">—</div><div class="stat-trend down">Immediate action needed</div></div>
+        </div>
+        <div class="stat-card card-warning">
+          <div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="stat-body"><div class="stat-label">High Priority</div><div class="stat-value" id="sc-high">—</div><div class="stat-trend down">Within 2 hours</div></div>
+        </div>
+        <div class="stat-card card-info">
+          <div class="stat-icon stat-icon-blue"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="stat-body"><div class="stat-label">Warnings</div><div class="stat-value" id="sc-warnings">—</div><div class="stat-trend flat">Monitor & respond</div></div>
+        </div>
+        <div class="stat-card card-success">
+          <div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="stat-body"><div class="stat-label">Resolved Today</div><div class="stat-value" id="sc-resolved">—</div><div class="stat-trend up">Good response rate</div></div>
+        </div>
+      </div>
+
+      <!-- Auto-refresh bar -->
+      <div style="margin-bottom:var(--space-4);">
+        <div class="flex flex-between items-center" style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+          <span>AI Alert Engine — scanning all modules</span>
+          <span id="refreshCountdown">Next refresh in 30s</span>
+        </div>
+        <div class="refresh-bar"><div class="refresh-fill" id="refreshFill" style="width:100%;"></div></div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <div class="filter-tab active" data-filter="all">All Alerts</div>
+        <div class="filter-tab" data-filter="critical">Critical</div>
+        <div class="filter-tab" data-filter="high">High Priority</div>
+        <div class="filter-tab" data-filter="warning">Warnings</div>
+        <div class="filter-tab" data-filter="custody">Custody</div>
+        <div class="filter-tab" data-filter="officer">Officer</div>
+        <div class="filter-tab" data-filter="fir">FIR / Case</div>
+      </div>
+
+      <!-- Main Layout: Feed + Sidebar -->
+      <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:var(--space-5);">
+
+        <!-- Alert Feed -->
+        <div>
+          <div class="flex flex-between items-center" style="margin-bottom:var(--space-3);">
+            <span style="font-size:13px;font-weight:600;" id="feedCount">Loading alerts...</span>
+          </div>
+          <div class="alert-feed" id="alertFeed">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-4);">
+
+          <!-- AI Station Risk Score -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">AI Station Risk Score</div>
+                <div class="card-subtitle">Score = Pending×0.4 + Complaints×0.35 + Delay×0.25</div>
+              </div>
+            </div>
+            <div class="ai-score-section" id="stationScores">
+              <!-- populated by JS -->
+            </div>
+          </div>
+
+          <!-- Alert Type Donut -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Alert Distribution</div></div>
+            <div class="card-body">
+              <div style="height:180px;"><canvas id="alertDonut"></canvas></div>
+            </div>
+          </div>
+
+          <!-- AI Info Panel -->
+          <div class="ai-panel">
+            <div class="ai-panel-header">
+              <span class="ai-badge"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>AI ENGINE</span>
+              <div class="ai-title">How Smart Alerts Work</div>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+              <div style="margin-bottom:6px;">&#9632; <strong>Murder / Missing:</strong> Auto-flagged as Critical within 60 seconds of FIR registration</div>
+              <div style="margin-bottom:6px;">&#9632; <strong>Case Delay:</strong> FIRs pending &gt;30 days escalate to High Priority</div>
+              <div style="margin-bottom:6px;">&#9632; <strong>Custody No-Update:</strong> Health log &gt;4 hrs → Critical alert generated</div>
+              <div style="margin-bottom:6px;">&#9632; <strong>Absentee Officer:</strong> GPS mismatch &gt;30 min → Warning issued</div>
+              <div>&#9632; <strong>Complaint Surge:</strong> Station complaint rate spike → Warning issued</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/alerts.js"></script>
+</body>
+</html>
